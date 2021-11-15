@@ -1,5 +1,5 @@
 import React from "react";
-import {Home} from "./src/pages/Home";
+import Home from "./src/pages/Home";
 
 
 export default function App() { 
@@ -7,4 +7,4 @@ export default function App() {
 }
 
 
-/// cap 1 / pasta 02  / aula 8
+/// cap 1 / pasta 02  / aula 11

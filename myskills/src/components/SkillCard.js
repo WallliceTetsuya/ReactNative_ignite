@@ -5,11 +5,11 @@ import {
     TouchableOpacity
 } from "react-native";
 
-export default () => {
+export default ({skill}) => {
     return (
-        <TouchableOpacity key={skill} style={styles.buttonSkill}>
+        <TouchableOpacity style={styles.buttonSkill}>
             <Text style={[styles.textSkill]}>
-                {/* {skill} */}
+                {skill}
             </Text>
         </TouchableOpacity>
     )

@@ -8,12 +8,12 @@ import {
 
 
 
-export default () => {
+export default ({onPress}) => {
     return (
         <TouchableOpacity 
             style={styles.button}
             activeOpacity={0.7}
-            // onPress={handleAddNewSkill} 
+            onPress={onPress} 
         >
 
             <Text style={styles.buttonText} >Add</Text>

@@ -4,19 +4,21 @@ import {
     StyleSheet,
     SafeAreaView,
     TextInput, 
-    Platform
+    Platform,
+    ScrollView,
+    FlatList
 } from "react-native";
 
 import Button from "../components/Button";
 import SkillCard from "../components/SkillCard";
 
-export function Home(){
+export default () => {
 
-    const [newSkill, setNewSkill] = useState();
-    const [mySkill, setMySkill] = useState([]);
+    const [newSkill, setNewSkill] = useState('');
+    const [mySkills, setMySkills] = useState([]);
 
     function handleAddNewSkill() {
-        setMySkill(oldState => [... oldState,newSkill]);
+        setMySkills(oldState => [... oldState,newSkill]);
     }
 
     return (
@@ -30,20 +32,20 @@ export function Home(){
             onChangeText={setNewSkill}
         />
 
-        <Button/>
+        <Button onPress={handleAddNewSkill} />
 
         <Text style={[styles.title,{marginVertical: 40}]}>
             My Skill
         </Text>
 
-
-        {
-            mySkill.map(skill => (
-               <SkillCard/>
-            ))
-        }
-
-
+        <FlatList
+            data={mySkills}
+            keyExtractor={item => item}
+            renderItem={({item}) => (
+                <SkillCard skill={item} />
+            )}
+        />
+        
       </SafeAreaView>
     )
 }
