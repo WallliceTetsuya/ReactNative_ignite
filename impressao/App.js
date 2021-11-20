@@ -3,13 +3,13 @@
    Button,
    SafeAreaView,
    StyleSheet,
+   Text,
    View
  } from 'react-native';
  
  import RNPrint from 'react-native-print';
 
  import PageProducts from './src/pages/products';
- 
  export default class App extends Component {
  
    async printHTML() {
@@ -23,8 +23,11 @@
    render() {
      return (
        <SafeAreaView style={styles.container}>
+         
          {/* <Button onPress={this.printHTML} title="Print HTML" /> */}
-         <PageProducts/>
+         
+          <PageProducts/>
+    
        </SafeAreaView>
      );
    }
@@ -33,8 +36,6 @@
  const styles = StyleSheet.create({
    container: {
      flex: 1,
-     justifyContent: 'center',
      backgroundColor: '#121015',
-     alignItems: 'center',
    },
  });
