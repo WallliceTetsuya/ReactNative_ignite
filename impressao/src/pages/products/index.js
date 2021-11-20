@@ -18,39 +18,100 @@ const DATA = [
 
   
 
-const Item = ({ title,value }) => (
+function modificarQtde(id,qtde) {
+    console.log(id + ' ' + qtde);
     
-    <View  style={styles.container} > 
-        <View style={{width:'60%', justifyContent:'center'}}>
-            <Text style={styles.product} >{title}</Text>
-            <Text style={styles.valueProduct} >R$ {value}</Text>
-        </View>
+    // setCarrinho();
+}
 
-        <View style={{width:'40%', flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
-            <Icon.Button tyle={styles.button} name="plus-circle" size={20} backgroundColor='transparent' solid/>
+
+
+// const Item = ({ title,value,id }) => (
+    
+//     <View  style={styles.container} > 
+//         <View style={{width:'60%', justifyContent:'center'}}>
+//             <Text style={styles.product} >{title}</Text>
+//             <Text style={styles.valueProduct} >R$ {value}</Text>
+//         </View>
+
+//         <View style={{width:'40%', flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
+//             <Icon.Button tyle={styles.button} name="plus-circle" size={20} backgroundColor='transparent' solid/>
             
-            <TextInput 
-                style={styles.input}
-                placeholder='0'
-                placeholderTextColor='#555' 
-                // onChangeText={setNewSkill}
-            />
+//             <TextInput 
+//                 style={styles.input}
+//                 placeholder='0'
+//                 placeholderTextColor='#555' 
+//                 onChangeText={(qtde) => modificarQtde(id,qtde)}
+//                 value={count}
+//                 keyboardType="numeric"
+//             />
 
-            <Icon.Button tyle={styles.button} name="minus-circle"  size={20} backgroundColor='transparent'  solid/>
-        </View>
-    </View>
-  );
+//             <Icon.Button tyle={styles.button} name="minus-circle"  size={20} backgroundColor='transparent'  solid/>
+//         </View>
+//     </View>
+//   );
   
 
 function PageProducts(){
     const [searchFilter, setSearchFilter] = useState('')
+    const [carrinho, setCarrinho] = useState([])
+    const [count, setCount] = useState(0);
+
+    const adicionar = () => {
+        setCount(count + 1)
+        
+        console.log(count);
+    };
+
+    const remover = () => {
+        setCount(count - 1)
+
+        console.log(count);
+    };
+
+
+
     const DATAFilter = DATA.filter((DATA) => DATA.title.toLowerCase().includes(searchFilter.toLowerCase()))
 
     const renderItem = ({ item }) => (
-        <Item title={item.title} value={item.value}/>
+        // <Item title={item.title} value={item.value} id={item.id}/>
+
+        <View  style={styles.container} > 
+            <View style={{width:'70%', justifyContent:'center'}}>
+                <Text style={styles.product} >{item.title}</Text>
+                <Text style={styles.valueProduct} >R$ {item.value}</Text>
+            </View>
+
+            <View style={{width:'30%', flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
+                <Icon.Button tyle={styles.button} name="plus-circle" onPress={adicionar} size={20} backgroundColor='transparent' solid/>
+                
+                <Text style={styles.textQtde}>
+                    {count || '0'}
+                </Text>
+
+                <Icon.Button tyle={styles.button} name="minus-circle"  onPress={remover}  size={20} backgroundColor='transparent'  solid/>
+            </View>
+        </View>
+
+        
     );
 
     
+    const renderSeparator = () => {
+        return (
+          <View
+            style={{
+              height: 1,
+              width: "100%",
+              backgroundColor: "#CED0CE",
+              marginVertical:8
+            }}
+          />
+        );
+      };
+
+
+
     return(
         <View style={{flex:1}}>
             <View style={{flex:2,justifyContent:'center'}}>
@@ -68,6 +129,8 @@ function PageProducts(){
                     data={DATAFilter}
                     renderItem={renderItem}
                     keyExtractor={item => item.id}
+                    ItemSeparatorComponent={renderSeparator}
+
                 />
             </View>
         
@@ -84,15 +147,13 @@ export default PageProducts;
 const styles = StyleSheet.create({
     container: {
       flexDirection:'row',
-      paddingHorizontal:10,
+      paddingStart:10,
+      flex:1
     },
-    input: {
-        backgroundColor:'#1F1E25',
+    textQtde: {
         color: '#FFF',
         fontSize: 20,
-        flex:1,
         textAlign:'center',
-        borderRadius:100,
         marginEnd:10,
     },
     inputFilter: {
