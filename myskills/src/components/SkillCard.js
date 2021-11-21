@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect} from "react";
 import { 
     Text,
     StyleSheet,
@@ -6,6 +6,7 @@ import {
 } from "react-native";
 
 export default ({skill}) => {
+
     return (
         <TouchableOpacity style={styles.buttonSkill}>
             <Text style={[styles.textSkill]}>

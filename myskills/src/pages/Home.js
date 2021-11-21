@@ -21,6 +21,7 @@ export default () => {
         setMySkills(oldState => [... oldState,newSkill]);
     }
 
+
     return (
       <SafeAreaView style={styles.container} >
         <Text style={styles.title} >Welcome, Wallice</Text>
