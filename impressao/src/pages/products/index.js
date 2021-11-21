@@ -1,9 +1,9 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import {View, StyleSheet, TextInput,Text, FlatList, SafeAreaView} from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const DATA = [
+var DATA = [
     {id:	1,	title:	'Skol1',	value:	'7,5'},
     {id:	2,	title:	'RedBull1',	value:	'8'},
     {id:	3,	title:	'Skol2',	value:	'8,5'},
@@ -13,69 +13,75 @@ const DATA = [
     {id:	7,	title:	'Skol4',	value:	'10,5'},
     {id:	8,	title:	'RedBull4',	value:	'11'},
     {id:	9,	title:	'Skol5',	value:	'11,5'},
-    {id:	10,	title:	'RedBull5',	value:	'12'}
+    {id:	10,	title:	'RedBull5',	value:	'12'},
   ];
 
-  
-
-function modificarQtde(id,qtde) {
-    console.log(id + ' ' + qtde);
-    
-    // setCarrinho();
-}
-
-
-
-// const Item = ({ title,value,id }) => (
-    
-//     <View  style={styles.container} > 
-//         <View style={{width:'60%', justifyContent:'center'}}>
-//             <Text style={styles.product} >{title}</Text>
-//             <Text style={styles.valueProduct} >R$ {value}</Text>
-//         </View>
-
-//         <View style={{width:'40%', flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
-//             <Icon.Button tyle={styles.button} name="plus-circle" size={20} backgroundColor='transparent' solid/>
-            
-//             <TextInput 
-//                 style={styles.input}
-//                 placeholder='0'
-//                 placeholderTextColor='#555' 
-//                 onChangeText={(qtde) => modificarQtde(id,qtde)}
-//                 value={count}
-//                 keyboardType="numeric"
-//             />
-
-//             <Icon.Button tyle={styles.button} name="minus-circle"  size={20} backgroundColor='transparent'  solid/>
-//         </View>
-//     </View>
-//   );
   
 
 function PageProducts(){
     const [searchFilter, setSearchFilter] = useState('')
     const [carrinho, setCarrinho] = useState([])
-    const [count, setCount] = useState(0);
+    const [total, setTotal] = useState(0);
 
-    const adicionar = () => {
-        setCount(count + 1)
+    const adicionar = (item) => {
+        var criar = true;
+        var array = item;
+
+        carrinho.map((chave)=> {
+            if (chave.id == array.id) {
+                chave['qtde'] = chave.qtde + 1;
+                setCarrinho(carrinho);
+                criar = false;
+            }
+        })
+
+        if(criar){
+            array['qtde'] = 1 ;
+            setCarrinho(oldState => [... oldState,array]);
+        }
         
-        console.log(count);
+        setCarrinho(oldState => [... oldState]);
+
+        setTotal()
     };
 
-    const remover = () => {
-        setCount(count - 1)
+    const remover = (item) => {
+        var array = item;
 
-        console.log(count);
+        var key = carrinho.keys();
+
+        carrinho.map((chave)=> {
+
+            keyAtual = key.next();
+
+            if (chave.id == array.id) {
+                chave['qtde'] = chave.qtde - 1;
+                if (chave.qtde == 0) {
+                    carrinho.splice(keyAtual.value, 1);
+                }
+                setCarrinho(carrinho);
+            }
+        })
+
+        setCarrinho(oldState => [... oldState]);
+
+
     };
 
+    useEffect(() => {
+        var total = 0;
+        carrinho.map((chave)=> {
+            total += parseInt(chave.qtde) * parseFloat(chave.value.replace(',', '.'))  
+
+        })
+
+        setTotal(total.toString().replace('.',','));
+    }, [remover,adicionar])
 
 
     const DATAFilter = DATA.filter((DATA) => DATA.title.toLowerCase().includes(searchFilter.toLowerCase()))
 
     const renderItem = ({ item }) => (
-        // <Item title={item.title} value={item.value} id={item.id}/>
-
         <View  style={styles.container} > 
             <View style={{width:'70%', justifyContent:'center'}}>
                 <Text style={styles.product} >{item.title}</Text>
@@ -83,13 +89,13 @@ function PageProducts(){
             </View>
 
             <View style={{width:'30%', flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
-                <Icon.Button tyle={styles.button} name="plus-circle" onPress={adicionar} size={20} backgroundColor='transparent' solid/>
+                <Icon.Button tyle={styles.button} name="plus-circle" onPress={() => adicionar(item)} size={20} backgroundColor='transparent' solid/>
                 
                 <Text style={styles.textQtde}>
-                    {count || '0'}
+                    {item.qtde || '0'}
                 </Text>
 
-                <Icon.Button tyle={styles.button} name="minus-circle"  onPress={remover}  size={20} backgroundColor='transparent'  solid/>
+                <Icon.Button tyle={styles.button} name="minus-circle"  onPress={() =>  remover(item)}  size={20} backgroundColor='transparent'  solid/>
             </View>
         </View>
 
@@ -133,9 +139,10 @@ function PageProducts(){
 
                 />
             </View>
-        
-            <View style={{flex:1,justifyContent:'center'}}>
-                <Text>Total</Text>
+
+            <View style={{flex:2,justifyContent:'center'}}>
+                <Text style={{marginStart:15, color: '#555',fontSize: 15}} >Total </Text>
+                <Text style={{marginStart:15, color: '#FFF',fontSize: 25}} >R$ {total}</Text>
             </View>
         </View>
     )
