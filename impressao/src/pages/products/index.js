@@ -2,6 +2,15 @@ import React,{useState,useEffect} from 'react';
 import {View, StyleSheet, TextInput,Text, FlatList, SafeAreaView} from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import RNPrint from 'react-native-print';
+import Moment from 'moment';
+
+import { format } from "date-fns";
+
+var date = new Date();
+
+var formattedDate = format(date, "dia do, yyyy H:mma");
+
 
 var DATA = [
     {id:	1,	title:	'Skol1',	value:	'7,5'},
@@ -16,6 +25,22 @@ var DATA = [
     {id:	10,	title:	'RedBull5',	value:	'12'},
   ];
 
+
+async function printHTML(carrinho) {
+
+    var html = ``;
+
+    carrinho.map((chave)=> {
+        html += `<h1> logoFestival</h1><h1>${date}</h1>
+                <h2>${chave.title}</h2>
+                <hr>`;
+    });
+
+     await RNPrint.print({
+       html: html,
+     })
+   }
+  
   
 
 function PageProducts(){
@@ -42,7 +67,6 @@ function PageProducts(){
         
         setCarrinho(oldState => [... oldState]);
 
-        setTotal()
     };
 
     const remover = (item) => {
@@ -82,6 +106,8 @@ function PageProducts(){
     const DATAFilter = DATA.filter((DATA) => DATA.title.toLowerCase().includes(searchFilter.toLowerCase()))
 
     const renderItem = ({ item }) => (
+            
+
         <View  style={styles.container} > 
             <View style={{width:'70%', justifyContent:'center'}}>
                 <Text style={styles.product} >{item.title}</Text>
@@ -89,13 +115,13 @@ function PageProducts(){
             </View>
 
             <View style={{width:'30%', flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
-                <Icon.Button tyle={styles.button} name="plus-circle" onPress={() => adicionar(item)} size={20} backgroundColor='transparent' solid/>
+                <Icon.Button tyle={styles.button} name="minus-circle"  onPress={() =>  remover(item)}  size={20} backgroundColor='transparent'  solid/>
                 
                 <Text style={styles.textQtde}>
                     {item.qtde || '0'}
                 </Text>
 
-                <Icon.Button tyle={styles.button} name="minus-circle"  onPress={() =>  remover(item)}  size={20} backgroundColor='transparent'  solid/>
+                <Icon.Button tyle={styles.button} name="plus-circle" onPress={() => adicionar(item)} size={20} backgroundColor='transparent' solid/>
             </View>
         </View>
 
@@ -104,6 +130,7 @@ function PageProducts(){
 
     
     const renderSeparator = () => {
+        
         return (
           <View
             style={{
@@ -140,9 +167,14 @@ function PageProducts(){
                 />
             </View>
 
-            <View style={{flex:2,justifyContent:'center'}}>
-                <Text style={{marginStart:15, color: '#555',fontSize: 15}} >Total </Text>
-                <Text style={{marginStart:15, color: '#FFF',fontSize: 25}} >R$ {total}</Text>
+            <View style={{flex:2,justifyContent:'center',flexDirection:'row'}}>
+                <View style={{flex:2,justifyContent:'center'}}>
+                    <Text style={{marginStart:15, color: '#555',fontSize: 15}} >Total </Text>
+                    <Text style={{marginStart:15, color: '#FFF',fontSize: 25}} >R$ {total}</Text>
+                </View>
+                <View style={{flex:1,justifyContent:'center'}}>
+                    <Icon.Button style={styles.button} name="tags" onPress={() => printHTML(carrinho)}  size={20}  backgroundColor='transparent' solid/>
+                </View>
             </View>
         </View>
     )
