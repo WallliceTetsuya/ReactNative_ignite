@@ -1,29 +1,30 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList, StyleSheet, Text, TextInput, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FlatListProducts from '../../components/FlatListProducts';
 import FlatListSeparator from '../../components/FlatListSeparator';
-import products from './lista';
 import RNPrint from 'react-native-print';
-
+import {getInfo, getProducts} from '../../Api';
 
 export default () => {
   const [searchFilter, setSearchFilter] = useState('');
   const [carrinho, setCarrinho] = useState([]);
   const [total, setTotal] = useState(0);
+  const [products, setProducts] = useState([]);
 
   const calculaTotal = () => {
     setTotal(
       carrinho.reduce(
         (acc, product) =>
-          acc + parseFloat(product.value) * parseInt(product.qtde),
+          acc + parseFloat(product.value.replace(',', '.')) * product.qtde,
         0,
       ),
     );
+
   };
 
   const productsFilter = products.filter(product => {
-    return product.title.toLowerCase().includes(searchFilter.toLowerCase());
+    return product.nome.toLowerCase().includes(searchFilter.toLowerCase());
   });
 
   async function printHTML() {
@@ -40,8 +41,6 @@ export default () => {
     const semana = new Array("Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado");
     const dia_semana = semana[new Date().getDay()];
 
-    console.log(dia_semana);
-
     var html = '<html><body>';
     html += '<table>';
 
@@ -49,7 +48,9 @@ export default () => {
       for (let i = 0; i < product.qtde; i++) {
         html += ` <tr>
                     <th style="width: 40%;">
-                      <h1 style="margin-bottom: 0px;font-family: system-ui;">LOGO</h1>
+                      <h1 style="margin-bottom: 0px;font-family: system-ui;">
+                        <img src="https://showmanager.moldar.net/eventos/1339/logo">
+                      </h1>
                     </th>
                     <th style="color: gray;">
                       <h1 style="margin-bottom: 0px;" ><i>${ano}</i></i></h1>
@@ -58,7 +59,7 @@ export default () => {
                   </tr>
                   `;
         html += ` <tr>
-                    <td style="padding-top: 10px;border-bottom: 1px solid;" colspan="2" align="center" ><h3><b>${product.title}</b></h3></td>
+                    <td style="padding-top: 10px;border-bottom: 1px solid;" colspan="2" align="center" ><h3><b>${product.nome}</b></h3></td>
                   </tr>`;
       }
     });
@@ -67,7 +68,13 @@ export default () => {
 
     await RNPrint.print({
       html,
-    });
+    })
+      .then(() => {
+        console.log('Printed');
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   function addItem(item: any) {
@@ -100,12 +107,23 @@ export default () => {
   }
 
   useEffect(() => {
+    // merge products and carrinho
     calculaTotal();
   }, [removeItem, addItem]);
 
+  useEffect(() => {
+    getInfo('ECP-191585').then(r => {
+      getProducts(r.data.evento.id_evento).then(response => {
+        console.log(response.data.produtos);
+        const productList = response.data.produtos;
+        setProducts(productList);
+      });
+    });
+  }, []);
+
   return (
     <View style={{flex: 1}}>
-      <View style={{marginTop: 30}}>
+      <View style={{marginTop: 10}}>
         <TextInput
           style={styles.inputFilter}
           placeholder="Buscar"
@@ -116,7 +134,7 @@ export default () => {
 
       <View style={{flex: 1}}>
         <FlatList
-          style={{marginVertical: 15}}
+          style={{marginVertical: 10}}
           data={productsFilter}
           renderItem={item => (
             <FlatListProducts
@@ -131,7 +149,7 @@ export default () => {
       <View style={{flexDirection: 'row'}}>
         <View style={{flex: 1, marginStart: 15}}>
           <Text style={styles.totalLabel}> Total </Text>
-          <Text style={styles.totalValue}> R$ {total} </Text>
+          <Text style={styles.totalValue}> R$ {total.toFixed(2)} </Text>
         </View>
         <View>
           <Icon.Button
@@ -139,6 +157,8 @@ export default () => {
             onPress={() => printHTML()}
             size={25}
             backgroundColor="transparent"
+            color={carrinho.length === 0 ? 'black' : '#fff'}
+            disabled={carrinho.length === 0}
           />
         </View>
       </View>

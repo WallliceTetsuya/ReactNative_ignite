@@ -6,8 +6,8 @@ export default (props) => {
   return (
     <View style={styles.container}>
       <View style={{width: '70%', justifyContent: 'center'}}>
-        <Text style={styles.product}> {props.data.item.title} </Text>
-        <Text style={styles.valueProduct}> R$ {props.data.item.value} </Text>
+        <Text style={styles.product}> {props.data.item.nome} </Text>
+        <Text style={styles.valueProduct}> R$ {props.data.item.preco} </Text>
       </View>
 
       <View style={styles.addOrRemove}>
