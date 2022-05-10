@@ -3,133 +3,132 @@ import {FlatList, StyleSheet, Text, TextInput, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FlatListProducts from '../../components/FlatListProducts';
 import FlatListSeparator from '../../components/FlatListSeparator';
+import htmlTiquet from '../../Print/printEtiqueta';
 import RNPrint from 'react-native-print';
-import {getInfo, getProducts} from '../../Api';
+import {getObject} from '../../Storage';
 
-export default () => {
+
+export default (props) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [carrinho, setCarrinho] = useState([]);
   const [total, setTotal] = useState(0);
   const [products, setProducts] = useState([]);
+  const [imageBase64, setImageBase64] = useState('');
+
+
+  async function printHTML(carrinho) {
+    const html = await htmlTiquet(carrinho, imageBase64);
+    RNPrint.print({
+      html,
+    })
+      .then(() => {
+        setCarrinho([]);
+        // falta limpar a quantidade de produtos
+      })
+      .catch(err => {
+        alert(err);
+      });
+  };
 
   const calculaTotal = () => {
-    setTotal(
-      carrinho.reduce(
-        (acc, product) =>
-          acc + parseFloat(product.value.replace(',', '.')) * product.qtde,
-        0,
-      ),
-    );
-
+    setTotal(carrinho.reduce((acc, product) => acc + product.preco, 0));
   };
 
   const productsFilter = products.filter(product => {
     return product.nome.toLowerCase().includes(searchFilter.toLowerCase());
   });
 
-  async function printHTML() {
-    const ano = new Date().getFullYear();
-    const dia_mes =
-      (new Date().getDate() < 10
-        ? '0' + new Date().getDate()
-        : new Date().getDate()) +
-      '/' +
-      (new Date().getMonth() + 1 < 10
-        ? '0' + (new Date().getMonth() + 1)
-        : new Date().getMonth() + 1);
-
-    const semana = new Array("Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado");
-    const dia_semana = semana[new Date().getDay()];
-
-    var html = '<html><body>';
-    html += '<table>';
-
-    carrinho.forEach(product => {
-      for (let i = 0; i < product.qtde; i++) {
-        html += ` <tr>
-                    <th style="width: 40%;">
-                      <h1 style="margin-bottom: 0px;font-family: system-ui;">
-                        <img src="https://showmanager.moldar.net/eventos/1339/logo">
-                      </h1>
-                    </th>
-                    <th style="color: gray;">
-                      <h1 style="margin-bottom: 0px;" ><i>${ano}</i></i></h1>
-                      <h6 style="margin: 0;">${dia_semana} ${dia_mes} </h6>
-                    </th>
-                  </tr>
-                  `;
-        html += ` <tr>
-                    <td style="padding-top: 10px;border-bottom: 1px solid;" colspan="2" align="center" ><h3><b>${product.nome}</b></h3></td>
-                  </tr>`;
-      }
-    });
-    html += '</table>';
-    html += '</body></html>';
-
-    await RNPrint.print({
-      html,
-    })
-      .then(() => {
-        console.log('Printed');
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-
   function addItem(item: any) {
-    const itemCarrinho = carrinho.find(product => product.id === item.id);
+    carrinho.push(item);
 
-    if (itemCarrinho) {
-      itemCarrinho.qtde++;
-    } else {
-      item.qtde = 1;
-      carrinho.push(item);
-    }
-
+    products
+      .filter(product => product.id === item.id)
+      .map(product => {
+        product.qtde = product.qtde + 1;
+      });
+    
     setCarrinho(oldState => [... oldState]);
   }
 
   function removeItem(item: any) {
     const itemCarrinho = carrinho.find(product => product.id === item.id);
 
+    products
+      .filter(product => product.id === item.id)
+      .map(product => {
+        product.qtde = product.qtde - 1;
+      });
+
     if (itemCarrinho) {
-      if (itemCarrinho.qtde > 1) {
-        itemCarrinho.qtde--;
-      } else {
-        item.qtde = 0;
-        carrinho.splice(carrinho.indexOf(itemCarrinho), 1);
-      }
+      carrinho.splice(carrinho.indexOf(itemCarrinho), 1);
+      setCarrinho(oldState => [... oldState]);
     }
+  }
 
-    setCarrinho(oldState => [... oldState]);
+  function mergeCarrinho(productsMerge) {
+    carrinho.map(item => {
+      const product = productsMerge.find(product => product.id === item.id);
+      if (product) {
+        product.qtde = item.qtde;
+      }
+    });
 
+    return productsMerge;
+  }
+
+  function alimentarDados(){
+    getObject('products')
+      .then(response => {
+        if (response) {
+          setProducts(response);
+        }
+      })
+      .catch(err => {
+        alert(err);
+      });
+
+    getObject('event')
+      .then(response => {
+        if (response) {
+          setImageBase64(response.empresa.logo);
+        }
+      }
+    ).catch(err => {
+        alert(err);
+    }
+    );
   }
 
   useEffect(() => {
-    // merge products and carrinho
     calculaTotal();
   }, [removeItem, addItem]);
 
+
+
   useEffect(() => {
-    getInfo('ECP-191585').then(r => {
-      getProducts(r.data.evento.id_evento).then(response => {
-        console.log(response.data.produtos);
-        const productList = response.data.produtos;
-        setProducts(productList);
-      });
-    });
-  }, []);
+    alimentarDados();
+  }, [props]);
 
   return (
     <View style={{flex: 1}}>
-      <View style={{marginTop: 10}}>
-        <TextInput
-          style={styles.inputFilter}
-          placeholder="Buscar"
-          placeholderTextColor="#555"
-          onChangeText={setSearchFilter}
-        />
+      <View style={{marginTop: 15,flexDirection: 'row'}}>
+        <View style={{flex: 1}}>
+          <TextInput
+            style={styles.inputFilter}
+            placeholder="Buscar"
+            placeholderTextColor="#555"
+            onChangeText={setSearchFilter}
+          />
+        </View>
+        <View style={{justifyContent: 'center'}} >
+          <Icon
+            name="cog"
+            size={20}
+            color="#555"
+            style={{marginRight: 10}}
+            onPress={() => props.setModalVisible(true)}
+          />
+        </View>
       </View>
 
       <View style={{flex: 1}}>
@@ -154,7 +153,7 @@ export default () => {
         <View>
           <Icon.Button
             name="print"
-            onPress={() => printHTML()}
+            onPress={() => printHTML(carrinho)}
             size={25}
             backgroundColor="transparent"
             color={carrinho.length === 0 ? 'black' : '#fff'}

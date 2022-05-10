@@ -1,11 +1,18 @@
-import React from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {Modal, SafeAreaView, StatusBar, StyleSheet} from 'react-native';
 import Products from './Pages/Products';
+import Config from './Pages/getEvent';
+
 
 export default function App() {
+  const [modalVisible, setModalVisible] = useState(false);
   return (
     <SafeAreaView style={styles.container}>
-      <Products />
+      <StatusBar hidden={true} />
+      <Modal visible={modalVisible} animationType="fade" transparent={false}>
+        <Config setModalVisible={setModalVisible} />
+      </Modal>
+      <Products setModalVisible={setModalVisible} />
     </SafeAreaView>
   );
 }

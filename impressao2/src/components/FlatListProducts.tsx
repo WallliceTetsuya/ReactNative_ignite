@@ -1,8 +1,21 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+interface Props {
+  data: {
+    item: {
+      id: number;
+      nome: string;
+      preco: number;
+      qtde: number;
+    };
+  };
+  remover: (arg0: any) => void;
+  adicionar: (arg0: any) => void;
+}
 
-export default (props) => {
+export default (props: Props) => {
+  props.data.item.qtde == undefined ? props.data.item.qtde = 0 : props.data.item.qtde;
   return (
     <View style={styles.container}>
       <View style={{width: '70%', justifyContent: 'center'}}>
@@ -14,7 +27,7 @@ export default (props) => {
         <Icon.Button
           name="minus-circle"
           onPress={() => props.remover(props.data.item)}
-          disabled={props.data.item.qtde === 0}
+          disabled={props.data.item.qtde == 0}
           size={20}
           backgroundColor="transparent"
         />
